@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmly – Smart Pharmacy</title>
+<meta name="description" content="Pharmly – AI-powered pharmacy management with real-time stock, prescription verification, and intelligent medication assistance.">
+
+<!-- Skip to content link for keyboard users -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,600,500,400,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================================
+     NAVBAR
+============================================================ -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo" onclick="goTo('home'); return false;" aria-label="Pharmly – Go to home">
+      <div class="nav-logo-icon" aria-hidden="true">⚕</div>
+      Pharmly
+    </a>
+
+    <!-- Desktop nav -->
+    <ul class="nav-links" role="list">
+      <li><a onclick="goTo('home')" id="nav-home" class="active" tabindex="0" aria-current="page">Home</a></li>
+      <li><a onclick="goTo('about')" id="nav-about" tabindex="0">About</a></li>
+      <li><a id="nav-shop" tabindex="0" onclick="goTo('home'); setTimeout(()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'}),200)">Shop</a></li>
+      <li><a onclick="goTo('dashboard')" id="nav-dashboard" tabindex="0">AI+ Dashboard</a></li>
+      <li><a onclick="goTo('admin')" id="nav-admin" tabindex="0">Admin Panel</a></li>
+      <li><a onclick="goTo('endpoints')" id="nav-endpoints" tabindex="0">Safety</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <!-- Notifications -->
+      <div class="notif-wrap">
+        <button class="nav-icon-btn" id="notifBtn" onclick="toggleNotif()" aria-label="Notifications – 3 unread" aria-haspopup="true" aria-expanded="false" aria-controls="notifDrop">
+          <span aria-hidden="true">🔔</span>
+          <span class="badge-dot" id="notifDot" aria-hidden="true">3</span>
+        </button>
+        <div class="notif-drop" id="notifDrop" role="dialog" aria-label="Notifications panel" aria-modal="false">
+          <div class="notif-head">
+            <span>Notifications</span>
+            <button onclick="clearNotifs()" style="background:none;color:var(--b2);font-size:.78rem;font-weight:700;border:none;cursor:pointer;padding:4px 8px;border-radius:4px">Clear all</button>
+          </div>
+          <div id="notifList" role="list"></div>
+        </div>
+      </div>
+
+      <button class="btn-safety" onclick="goTo('endpoints')" aria-label="Safety and precautions">
+        <span aria-hidden="true">🛡️</span> Safety
+      </button>
+
+      <!-- Cart -->
+      <div class="cart-wrap">
+        <button class="nav-icon-btn" id="cartBtn" onclick="toggleCart()" aria-label="Shopping cart – 3 items" aria-haspopup="true" aria-expanded="false" aria-controls="cartDrop">
+          <span aria-hidden="true">🛒</span>
+          <span class="badge-dot" id="cartCount" aria-hidden="true">3</span>
+        </button>
+        <div class="cart-drop" id="cartDrop" role="dialog" aria-label="Shopping cart" aria-modal="false">
+          <div class="cart-head">
+            <span>🛒 Your Cart</span>
+            <button onclick="clearCart()" style="background:none;color:var(--b2);font-size:.78rem;font-weight:700;border:none;cursor:pointer;padding:4px 8px;border-radius:4px">Clear</button>
+          </div>
+          <div class="cart-items" id="cartItems" role="list" aria-label="Cart items"></div>
+          <div class="cart-foot" id="cartFoot">
+            <div class="cart-total"><span>Total</span><strong id="cartTotal">€0.00</strong></div>
+            <button class="btn-primary" onclick="openCheckout()" style="width:100%;justify-content:center">
+              <span aria-hidden="true">💳</span> Checkout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-login" onclick="openModal('loginModal')" aria-label="Login to your account">Login</button>
+
+      <!-- Mobile hamburger -->
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileNav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile nav panel -->
+  <nav id="mobileNav" class="nav-mobile" aria-label="Mobile navigation" hidden>
+    <div class="nav-mobile-links">
+      <a onclick="goTo('home');closeMobileNav()">🏠 Home</a>
+      <a onclick="goTo('about');closeMobileNav()">ℹ️ About</a>
+      <a onclick="goTo('home');closeMobileNav();setTimeout(()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'}),200)">🛒 Shop</a>
+      <a onclick="goTo('dashboard');closeMobileNav()">🤖 AI+ Dashboard</a>
+      <a onclick="goTo('admin');closeMobileNav()">📊 Admin Panel</a>
+      <a onclick="goTo('endpoints');closeMobileNav()">🛡️ Safety</a>
+      <div style="height:1px;background:var(--g5);margin:.75rem 0"></div>
+      <a onclick="openModal('loginModal');closeMobileNav()" style="color:var(--b2);font-weight:700">🔐 Login</a>
+    </div>
+  </nav>
+</nav>
+
+<!-- ============================================================
+     MAIN CONTENT AREA
+============================================================ -->
+<main id="main-content">
+
+<!-- ============================================================
+     HOME PAGE
+============================================================ -->
+<div id="page-home" class="page active">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-content">
+      <div class="hero-badge" aria-label="System status: AI operational and compliance active">
+        <span class="dot dot-green" aria-hidden="true"></span>
+        AI System Operational · Compliance Engine Active
+      </div>
+      <h1 class="hero-title" id="hero-title">
+        Your health,<br>
+        <span class="hero-title-grad">handled with care.</span><br>
+        Every order, every day.
+      </h1>
+      <p class="hero-sub">Pharmly brings you AI-powered prescription guidance, real-time medicine availability, and compassionate support — so you can focus on feeling better, not navigating paperwork.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="goTo('dashboard')">
+          <span aria-hidden="true">🚀</span> Get Started
+        </button>
+        <button class="btn-secondary" aria-label="Watch product demo video">
+          <span aria-hidden="true">▶</span> Watch Demo
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-hero">
+        <div class="search-box" role="search">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <label for="heroSearch" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Search medicine</label>
+          <input type="search" class="search-input" id="heroSearch"
+            placeholder="Search medicine by name, category..."
+            aria-label="Search medicine by name or category"
+            aria-autocomplete="list"
+            aria-controls="searchDrop"
+            aria-expanded="false"
+            autocomplete="off">
+          <button class="search-btn" onclick="doSearch()" aria-label="Search">Search</button>
+        </div>
+        <div class="search-drop" id="searchDrop" role="listbox" aria-label="Search suggestions"></div>
+        <div class="search-tags" role="group" aria-label="Quick search suggestions">
+          <button class="stag" onclick="fillSearch('Paracetamol')" aria-label="Search for Paracetamol">💊 Paracetamol</button>
+          <button class="stag" onclick="fillSearch('Ibuprofen')" aria-label="Search for Ibuprofen">🧴 Ibuprofen</button>
+          <button class="stag" onclick="fillSearch('Amoxicillin')" aria-label="Search for Amoxicillin">💉 Amoxicillin</button>
+          <button class="stag" onclick="fillSearch('Cetirizine')" aria-label="Search for Cetirizine">🩺 Cetirizine</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero visual – decorative -->
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-orb">
+        <div class="ring ring1"></div>
+        <div class="ring ring2"></div>
+        <div class="ring ring3"></div>
+        <div class="orb-core">
+          <span class="orb-emoji">💊</span>
+          <span class="orb-label">AI Rx</span>
+        </div>
+        <div class="fpill fp1">Paracetamol ✓</div>
+        <div class="fpill fp2">Stock: 32 🟢</div>
+        <div class="fpill fp3">Order #1023 ✅</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats strip -->
+  <section class="stats-strip" aria-label="Platform statistics">
+    <div class="stats-inner">
+      <div class="stat-item"><span class="stat-num" aria-label="98.7%">98.7%</span><span class="stat-lbl">Prescription Accuracy</span></div>
+      <div class="stat-div" role="separator" aria-hidden="true"></div>
+      <div class="stat-item"><span class="stat-num" aria-label="Over 1200">1,200+</span><span class="stat-lbl">Medicines in Stock</span></div>
+      <div class="stat-div" role="separator" aria-hidden="true"></div>
+      <div class="stat-item"><span class="stat-num" aria-label="Over 5000">5,000+</span><span class="stat-lbl">Orders Processed</span></div>
+      <div class="stat-div" role="separator" aria-hidden="true"></div>
+      <div class="stat-item"><span class="stat-num">24/7</span><span class="stat-lbl">AI Assistance</span></div>
+    </div>
+  </section>
+
+  <!-- Shop section -->
+  <section style="padding:4rem 0;background:white" id="shop" aria-labelledby="shop-title">
+    <div class="section-wrap">
+      <div class="feat-header" style="margin-bottom:2rem">
+        <h2 id="shop-title">🛒 Popular Medicines</h2>
+        <p>Browse our top medicines — add to cart instantly. Prescription required items are flagged.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem" id="shopGrid" aria-label="Medicine catalog"></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" aria-labelledby="feat-title">
+    <div class="section-wrap">
+      <div class="feat-header">
+        <h2 id="feat-title">Everything You Need in One Platform</h2>
+        <p>Powerful tools for modern pharmacy management, driven by AI</p>
+      </div>
+      <div class="feat-grid">
+        <article class="feat-card" onclick="goTo('dashboard')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' ')goTo('dashboard')" aria-label="AI Medication Assistant – Try Now">
+          <span class="feat-icon" aria-hidden="true">🤖</span>
+          <h3>AI Medication Assistant</h3>
+          <p>Chat or voice-based ordering with full prescription validation, compliance checks, and intelligent drug interaction alerts.</p>
+          <span class="feat-link" aria-hidden="true">Try Now →</span>
+        </article>
+        <article class="feat-card featured" onclick="goTo('admin')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' ')goTo('admin')" aria-label="AI+ User Dashboard – Open Dashboard">
+          <span class="feat-icon" aria-hidden="true">📊</span>
+          <h3>AI+ User Dashboard</h3>
+          <p>Real-time stock tracking, revenue analytics, top sellers, low stock alerts, and full order management in beautiful charts.</p>
+          <span class="feat-link" aria-hidden="true">Open Dashboard →</span>
+        </article>
+        <article class="feat-card" onclick="goTo('dashboard')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' ')goTo('dashboard')" aria-label="Prescription Verification – Learn More">
+          <span class="feat-icon" aria-hidden="true">📄</span>
+          <h3>Prescription Verification</h3>
+          <p>Automated prescription upload and verification. No restricted medicines without valid prescriptions — ever.</p>
+          <span class="feat-link" aria-hidden="true">Learn More →</span>
+        </article>
+        <article class="feat-card" tabindex="0" role="button" aria-label="Smart Notifications – See Alerts">
+          <span class="feat-icon" aria-hidden="true">🔔</span>
+          <h3>Smart Notifications</h3>
+          <p>Real-time alerts for low stock, new offers, refill arrivals, and order updates — pushed directly to your panel.</p>
+          <span class="feat-link" aria-hidden="true">See Alerts →</span>
+        </article>
+        <article class="feat-card" onclick="goTo('admin')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' ')goTo('admin')" aria-label="Customer Management – Manage Customers">
+          <span class="feat-icon" aria-hidden="true">👥</span>
+          <h3>Customer Management</h3>
+          <p>Full customer profiles, order histories, prescription records, and the ability to add new patients with ease.</p>
+          <span class="feat-link" aria-hidden="true">Manage →</span>
+        </article>
+        <article class="feat-card" onclick="goTo('dashboard')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' ')goTo('dashboard')" aria-label="Voice AI Agent – Try Voice">
+          <span class="feat-icon" aria-hidden="true">🎙️</span>
+          <h3>Voice AI Agent</h3>
+          <p>Hands-free medication ordering through the Vapi-powered voice assistant. Just speak and the AI handles the rest.</p>
+          <span class="feat-link" aria-hidden="true">Try Voice →</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-sec" aria-labelledby="cta-title">
+    <div class="cta-inner">
+      <div>
+        <h2 id="cta-title">Ready to Transform Your Pharmacy?</h2>
+        <p>Join hundreds of pharmacies already using Pharmly to streamline operations, reduce errors, and serve patients better.</p>
+        <button class="btn-primary" onclick="goTo('dashboard')">
+          <span aria-hidden="true">🚀</span> Get Started Free
+        </button>
+      </div>
+      <aside class="cta-card" aria-label="Live platform statistics">
+        <div class="cta-stat"><span aria-hidden="true">📦</span><div><strong>1,023</strong><small>Orders Today</small></div></div>
+        <div class="cta-stat"><span aria-hidden="true">💰</span><div><strong>$48,200</strong><small>Revenue This Month</small></div></div>
+        <div class="cta-stat"><span aria-hidden="true">🟢</span><div><strong>Online</strong><small>System Status</small></div></div>
+        <div class="cta-stat"><span aria-hidden="true">🛡️</span><div><strong>12 Blocked</strong><small>Rx Violations Today</small></div></div>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+      <a href="#" class="nav-logo" style="color:white" onclick="goTo('home');return false;" aria-label="Pharmly home">
+        <div class="nav-logo-icon" aria-hidden="true">⚕</div>Pharmly
+      </a>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a onclick="goTo('home')">Home</a>
+        <a onclick="goTo('about')">About</a>
+        <a onclick="goTo('dashboard')">Dashboard</a>
+        <a onclick="goTo('admin')">Admin Panel</a>
+        <a onclick="goTo('endpoints')">Safety</a>
+      </nav>
+      <div class="footer-meta">
+        <span class="dot dot-green" aria-hidden="true"></span>
+        <span>All Systems Operational</span>
+        <span>·</span>
+        <span>© 2024 Pharmly</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     ABOUT PAGE
+============================================================ -->
+<div id="page-about" class="page">
+  <div class="about-hero">
+    <div class="hero-badge" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;margin-bottom:1.25rem;display:inline-flex">
+      <span class="dot dot-green" aria-hidden="true"></span>
+      Trusted by 500+ Pharmacies Worldwide
+    </div>
+    <h1>About Pharmly</h1>
+    <p>We're building the future of intelligent, compliant, and human-centered pharmacy management — powered by artificial intelligence and driven by an unwavering commitment to patient safety.</p>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <h2>Our Story</h2>
+      <p>Pharmly was born from a simple observation: pharmacy management in the modern world was still stuck in outdated systems — paper prescriptions, manual inventory tracking, and zero real-time insights. We saw an opportunity to change that fundamentally.</p>
+      <p>Founded by a team of healthcare technologists, AI researchers, and pharmacists, Pharmly set out to build a platform that doesn't just digitize existing workflows — it reimagines them entirely. We asked ourselves: what would pharmacy management look like if it were designed from the ground up today, with everything we know about AI, cloud computing, and user experience?</p>
+      <p>The result is a platform that brings together natural language AI (so pharmacists and patients can just talk to it), real-time inventory intelligence, prescription compliance enforcement, and a beautiful dashboard that makes complex data feel simple and actionable.</p>
+      <p>Today, we serve hundreds of pharmacies across the country, processing thousands of orders daily, catching prescription violations before they happen, and helping pharmacy teams work smarter — not harder.</p>
+      <p>But what we're most proud of isn't the technology. It's the patient safety outcomes. Every prescription block, every low-stock alert, every dosage warning caught by our compliance engine represents a real person being protected. That's why we built this.</p>
+      <p>Join us in building a healthier world — one prescription at a time.</p>
+    </div>
+
+    <div>
+      <div class="astat-card" aria-label="Company statistics">
+        <div class="astat"><span class="astat-num">500+</span><span class="astat-lbl">Pharmacies Served</span></div>
+        <div class="astat"><span class="astat-num">2M+</span><span class="astat-lbl">Prescriptions Verified</span></div>
+        <div class="astat"><span class="astat-num">99.9%</span><span class="astat-lbl">Uptime SLA</span></div>
+        <div class="astat"><span class="astat-num">24/7</span><span class="astat-lbl">AI Support</span></div>
+      </div>
+
+      <div class="aval-card">
+        <h3>Our Core Values</h3>
+        <ul class="aval-list">
+          <li><span aria-hidden="true">🛡️</span><div><strong>Safety First</strong><p>Every decision we make is filtered through the lens of patient safety and compliance.</p></div></li>
+          <li><span aria-hidden="true">🤖</span><div><strong>AI with Empathy</strong><p>Our AI doesn't replace human care — it enhances it by handling the tedious so people can focus on the meaningful.</p></div></li>
+          <li><span aria-hidden="true">🌐</span><div><strong>Accessibility</strong><p>Designed for every user, regardless of technical ability or disability.</p></div></li>
+          <li><span aria-hidden="true">🔒</span><div><strong>Data Privacy</strong><p>Patient data is sacred. We maintain the highest standards of encryption and compliance.</p></div></li>
+        </ul>
+      </div>
+
+      <div class="ateam-card">
+        <h3>Our Leadership</h3>
+        <div class="tmember"><div class="tavatar" aria-hidden="true">👨‍⚕️</div><div><strong>Dr. Amir Khan</strong><p>CEO &amp; Co-Founder · Ex-WHO Health Tech Advisor</p></div></div>
+        <div class="tmember"><div class="tavatar" aria-hidden="true">👩‍💻</div><div><strong>Priya Sharma</strong><p>CTO · AI/ML Lead · Former Google Health</p></div></div>
+        <div class="tmember"><div class="tavatar" aria-hidden="true">👨‍💼</div><div><strong>James O'Brien</strong><p>COO · 15yr Healthcare Operations</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mission-sec">
+    <h2>Our Mission</h2>
+    <blockquote>"To make intelligent, safe, and accessible pharmacy management available to every healthcare provider on the planet — regardless of size, budget, or technical expertise."</blockquote>
+    <button class="btn-primary" onclick="goTo('dashboard')"><span aria-hidden="true">→</span> Explore the Platform</button>
+  </div>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+      <a href="#" class="nav-logo" style="color:white" onclick="goTo('home');return false;" aria-label="Pharmly home">
+        <div class="nav-logo-icon" aria-hidden="true">⚕</div>Pharmly
+      </a>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a onclick="goTo('home')">Home</a>
+        <a onclick="goTo('about')">About</a>
+        <a onclick="goTo('dashboard')">Dashboard</a>
+        <a onclick="goTo('admin')">Admin Panel</a>
+      </nav>
+      <div class="footer-meta"><span class="dot dot-green" aria-hidden="true"></span> All Systems Operational</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================================================
+     AI + USER DASHBOARD PAGE
+============================================================ -->
+<div id="page-dashboard" class="page">
+  <div class="dash-layout">
+
+    <!-- LEFT: AI CHAT -->
+    <section class="ai-panel" aria-label="AI Pharmacy Assistant">
+      <div class="ai-ph">
+        <div class="ai-ph-top">
+          <div>
+            <h2>🤖 AI Pharmacy Assistant</h2>
+            <div class="ai-status-row" aria-live="polite">
+              <span class="dot dot-green" aria-hidden="true"></span>System: Operational
+              <span class="sep" aria-hidden="true">|</span>
+              <span class="dot dot-green" aria-hidden="true"></span>Compliance: Active
+            </div>
+          </div>
+          <button class="webcall-btn" onclick="startWebCall()" aria-label="Start voice call with AI assistant">📞</button>
+        </div>
+      </div>
+
+      <div class="rx-window" id="rxWindow" role="region" aria-label="Prescription requirement notice">
+        <div class="rx-window-icon" aria-hidden="true">📋</div>
+        <div style="flex:1">
+          <h3>Prescription Requirement</h3>
+          <p>Some medications require a valid doctor's prescription. The AI will flag these automatically. Upload your prescription to proceed with restricted medicines.</p>
+          <div class="rx-window-btns">
+            <button class="rx-window-btn prim" onclick="openModal('rxModal')">📄 Upload Rx</button>
+            <button class="rx-window-btn" onclick="document.getElementById('rxWindow').style.display='none'" aria-label="Dismiss prescription notice">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-msgs" id="aiMsgs" role="log" aria-live="polite" aria-label="AI conversation messages"></div>
+
+      <div class="ai-input-area">
+        <div class="rx-banner" id="rxBanner" role="alert" aria-live="assertive">
+          <span class="ri" aria-hidden="true">⚠️</span>
+          <div><strong>Prescription Required</strong><small>This medicine needs a valid prescription to proceed.</small></div>
+          <button class="rx-upload-btn" onclick="openModal('rxModal')"><span aria-hidden="true">📄</span> Upload Prescription</button>
+        </div>
+        <div class="ai-input-row" role="group" aria-label="Message input">
+          <button class="mic-btn" id="micBtn" onclick="toggleVoice()" aria-label="Start voice input" aria-pressed="false">🎙️</button>
+          <label for="aiInput" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Type your medication request</label>
+          <input type="text" class="ai-ti" id="aiInput" placeholder="Speak or type your request..." aria-label="Type your medication request">
+          <button class="ai-send" onclick="sendAiMsg()" aria-label="Send message">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: DASHBOARD -->
+    <main class="admin-r" aria-label="Analytics dashboard">
+      <div class="dash-header">
+        <div>
+          <h1>AI+ User Dashboard</h1>
+          <p>Real-time pharmacy intelligence &amp; analytics</p>
+        </div>
+        <div>
+          <label for="periodSel" style="font-size:.82rem;font-weight:600;color:var(--g3);margin-right:8px">Time period:</label>
+          <select class="form-input" id="periodSel" onchange="updatePeriod()" style="width:140px">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="month">This Month</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="metrics" role="region" aria-label="Key metrics">
+        <div class="mcard"><div class="micon rev" aria-hidden="true">💰</div><div><div class="mval" id="dMetRev" aria-label="Total revenue">$48,200</div><div class="mlbl">Total Revenue</div><div class="mch pos" aria-label="2% increase this week">▲ 2% this week</div></div></div>
+        <div class="mcard"><div class="micon ord" aria-hidden="true">📦</div><div><div class="mval" id="dMetOrd" aria-label="Total orders">1,023</div><div class="mlbl">Total Orders</div><div class="mch pos">▲ 8% this week</div></div></div>
+        <div class="mcard"><div class="micon al" aria-hidden="true">⚠️</div><div><div class="mval" id="dMetLow" aria-label="3 low stock alerts">3</div><div class="mlbl">Low Stock Alerts</div><div class="mch neg">▼ Needs attention</div></div></div>
+        <div class="mcard"><div class="micon bl" aria-hidden="true">🛡️</div><div><div class="mval" id="dMetBlk" aria-label="12 prescription blocks">12</div><div class="mlbl">Prescription Blocks</div><div class="mch neu">Compliance enforced</div></div></div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card"><div class="cc-head"><h3>Total Revenue</h3><span class="badge badge-blue">This Week</span></div><div class="chart-h"><canvas id="dRevChart" aria-label="Revenue bar chart showing daily revenue for the week"></canvas></div></div>
+        <div class="chart-card"><div class="cc-head"><h3>Orders By Time</h3><span class="badge badge-green" style="display:flex;align-items:center;gap:4px"><span class="dot dot-green" aria-hidden="true"></span>Live</span></div><div class="chart-h"><canvas id="dOrdChart" aria-label="Live orders by hour chart"></canvas></div></div>
+      </div>
+
+      <div class="bot-row">
+        <div class="tcard">
+          <div class="tcard-head"><h3>Recent Orders</h3><button onclick="goTo('admin')" style="background:none;border:none;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--b2)">View All →</button></div>
+          <div style="overflow-x:auto"><table class="tbl" aria-label="Recent orders table"><thead><tr><th scope="col">Order ID</th><th scope="col">Medicine</th><th scope="col">Price</th><th scope="col">Status</th><th scope="col">Payment</th></tr></thead><tbody id="dOrdersBody"></tbody></table></div>
+        </div>
+        <div class="side-cards">
+          <div class="card" style="padding:1.1rem" aria-label="Top selling medicines">
+            <h3 style="font-size:.9rem;margin-bottom:.875rem;color:var(--b1)">🏆 Top Sellers This Week</h3>
+            <div id="dTopSellers"></div>
+          </div>
+          <div class="chart-card" aria-label="Inventory status chart">
+            <div class="cc-head"><h3>Inventory Status</h3><span class="badge badge-blue">Live</span></div>
+            <div style="position:relative;height:180px"><canvas id="dStockChart" aria-label="Stock distribution donut chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tcard">
+        <div class="tcard-head"><h3>Current Stock Overview</h3><span class="badge badge-blue">Updated now</span></div>
+        <div style="overflow-x:auto"><table class="tbl" aria-label="Current stock overview table"><thead><tr><th scope="col">Medicine</th><th scope="col">Stock</th><th scope="col">Status</th><th scope="col">Category</th><th scope="col">Reorder Level</th><th scope="col">Cart</th></tr></thead><tbody id="dStockBody"></tbody></table></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADMIN PANEL PAGE
+============================================================ -->
+<div id="page-admin" class="page">
+  <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <nav class="admin-sidebar" aria-label="Admin panel navigation">
+      <button class="sb-btn active" onclick="showAdminSec('overview',this)" aria-pressed="true" aria-controls="asec-overview"><span aria-hidden="true">📊</span>Overview</button>
+      <button class="sb-btn" onclick="showAdminSec('orders',this)" aria-pressed="false" aria-controls="asec-orders"><span aria-hidden="true">📦</span>Orders</button>
+      <button class="sb-btn" onclick="showAdminSec('customers',this)" aria-pressed="false" aria-controls="asec-customers"><span aria-hidden="true">👥</span>Customers</button>
+      <button class="sb-btn" onclick="showAdminSec('inventory',this)" aria-pressed="false" aria-controls="asec-inventory"><span aria-hidden="true">💊</span>Inventory</button>
+      <button class="sb-btn" onclick="showAdminSec('analytics',this)" aria-pressed="false" aria-controls="asec-analytics"><span aria-hidden="true">📈</span>Analytics</button>
+      <button class="sb-btn" onclick="showAdminSec('payments',this)" aria-pressed="false" aria-controls="asec-payments"><span aria-hidden="true">💳</span>Payments</button>
+      <div class="sb-div" role="separator" aria-hidden="true"></div>
+      <div class="sb-qs" aria-label="Quick statistics">
+        <div class="sq-title">Quick Stats</div>
+        <div class="sq-item"><span aria-hidden="true">💰</span><div><strong>$48,200</strong><small>Revenue</small></div></div>
+        <div class="sq-item"><span aria-hidden="true">📦</span><div><strong>1,023</strong><small>Orders</small></div></div>
+        <div class="sq-item"><span aria-hidden="true">👥</span><div><strong>342</strong><small>Customers</small></div></div>
+      </div>
+    </nav>
+
+    <div class="admin-main">
+
+      <!-- OVERVIEW -->
+      <section id="asec-overview" class="asec show" aria-labelledby="asec-ov-title">
+        <div class="asec-title-row"><div><h1 id="asec-ov-title">Sales Overview</h1><p class="asec-sub">Let's check your pharmacy today</p></div></div>
+        <div class="ov-metrics" role="region" aria-label="Overview metrics">
+          <div class="mcard"><div class="micon rev" aria-hidden="true">💰</div><div><div class="mval">$112,200</div><div class="mlbl">Total Revenue</div><div class="mch pos">▲ 2% last week</div></div></div>
+          <div class="mcard"><div class="micon ord" aria-hidden="true">📊</div><div><div class="mval">$12,500</div><div class="mlbl">Total Profit</div><div class="mch pos">▲ 8% last week</div></div></div>
+          <div class="mcard"><div class="micon al" aria-hidden="true">💸</div><div><div class="mval">$48,200</div><div class="mlbl">Total Cost</div><div class="mch neg">▼ 0.2% last week</div></div></div>
+          <div class="mcard"><div class="micon bl" aria-hidden="true">🛒</div><div><div class="mval">$96.50</div><div class="mlbl">Avg. Order Value</div><div class="mch pos">▲ 5% last week</div></div></div>
+        </div>
+        <div class="ov-charts">
+          <div class="chart-card"><div class="cc-head"><h3>Total Revenue</h3><span class="badge badge-blue">This Month</span></div><div style="height:240px"><canvas id="ovRevChart" aria-label="Monthly revenue bar chart"></canvas></div></div>
+          <div class="chart-card"><div class="cc-head"><h3>Orders By Time</h3></div><div style="height:240px"><canvas id="ovOrdChart" aria-label="Orders by time line chart"></canvas></div></div>
+        </div>
+        <div class="ov-bottom">
+          <div class="tcard">
+            <div class="tcard-head"><h3>Recent Orders</h3><button onclick="showAdminSec('orders',document.querySelectorAll('.sb-btn')[1])" style="background:none;border:none;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--b2)">View All →</button></div>
+            <div style="overflow-x:auto"><table class="tbl" aria-label="Recent orders"><thead><tr><th scope="col">Order ID</th><th scope="col">Medicine</th><th scope="col">Price</th><th scope="col">Status</th><th scope="col">Payment</th><th scope="col">Action</th></tr></thead><tbody id="ovOrdersBody"></tbody></table></div>
+          </div>
+          <div class="card" style="padding:1.1rem">
+            <h3 style="font-size:.9rem;margin-bottom:.875rem;color:var(--b1)">🏆 Top Products</h3>
+            <div id="ovTopProds"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ORDERS -->
+      <section id="asec-orders" class="asec" aria-labelledby="asec-ord-title">
+        <div class="asec-title-row">
+          <div><h1 id="asec-ord-title">Orders Management</h1><p class="asec-sub">View, manage and add orders</p></div>
+          <button class="btn-primary btn-sm" onclick="openModal('addOrderModal')"><span aria-hidden="true">➕</span> Add Order</button>
+        </div>
+        <div class="filter-row" role="search" aria-label="Filter orders">
+          <label for="ordSearch" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Search orders</label>
+          <input type="search" class="form-input" id="ordSearch" placeholder="Search orders..." style="max-width:280px" oninput="filterOrders()" aria-label="Search orders by ID, customer, or medicine">
+          <label for="ordStatusFilter" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Filter by status</label>
+          <select class="form-input" style="width:140px" onchange="filterOrders()" id="ordStatusFilter" aria-label="Filter orders by status">
+            <option value="">All Status</option>
+            <option>Completed</option>
+            <option>In Progress</option>
+            <option>Pending</option>
+          </select>
+        </div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Orders management table"><thead><tr><th scope="col">Order ID</th><th scope="col">Customer</th><th scope="col">Medicine</th><th scope="col">Price</th><th scope="col">Status</th><th scope="col">Payment Method</th><th scope="col">Payment Status</th><th scope="col">Actions</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+      </section>
+
+      <!-- CUSTOMERS -->
+      <section id="asec-customers" class="asec" aria-labelledby="asec-cust-title">
+        <div class="asec-title-row">
+          <div><h1 id="asec-cust-title">Customer Management</h1><p class="asec-sub">View and manage all customers</p></div>
+          <button class="btn-primary btn-sm" onclick="openModal('addCustModal')"><span aria-hidden="true">➕</span> Add Customer</button>
+        </div>
+        <div class="filter-row" role="search">
+          <label for="custSearch" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Search customers</label>
+          <input type="search" class="form-input" id="custSearch" placeholder="Search customers..." style="max-width:280px" oninput="filterCustomers()" aria-label="Search customers by name, email or ID">
+        </div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Customers management table"><thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Phone</th><th scope="col">Orders</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody id="custBody"></tbody></table></div>
+      </section>
+
+      <!-- INVENTORY -->
+      <section id="asec-inventory" class="asec" aria-labelledby="asec-inv-title">
+        <div class="asec-title-row">
+          <div><h1 id="asec-inv-title">Inventory Management</h1><p class="asec-sub">Track stock levels and manage medicines</p></div>
+          <button class="btn-primary btn-sm" onclick="openModal('addMedModal')"><span aria-hidden="true">➕</span> Add Medicine</button>
+        </div>
+        <div class="inv-alerts" id="invAlerts" role="region" aria-live="polite" aria-label="Stock alerts"></div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Inventory management table"><thead><tr><th scope="col">Medicine</th><th scope="col">Category</th><th scope="col">Stock</th><th scope="col">Status</th><th scope="col">Price</th><th scope="col">Rx Required</th><th scope="col">Cart</th><th scope="col">Actions</th></tr></thead><tbody id="invBody"></tbody></table></div>
+      </section>
+
+      <!-- PAYMENTS -->
+      <section id="asec-payments" class="asec" aria-labelledby="asec-pay-title">
+        <div class="asec-title-row">
+          <div><h1 id="asec-pay-title">Payment Center</h1><p class="asec-sub">Manage transactions and process payments securely</p></div>
+          <button class="btn-primary btn-sm" onclick="openModal('payModal')"><span aria-hidden="true">💳</span> New Payment</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem" role="region" aria-label="Payment metrics">
+          <div class="mcard"><div class="micon rev" aria-hidden="true">💰</div><div><div class="mval">€42,180</div><div class="mlbl">Total Collected</div><div class="mch pos">▲ 6% this month</div></div></div>
+          <div class="mcard"><div class="micon ord" aria-hidden="true">💳</div><div><div class="mval">28</div><div class="mlbl">Pending Payments</div><div class="mch neg">▼ Needs attention</div></div></div>
+          <div class="mcard"><div class="micon al" aria-hidden="true">🔄</div><div><div class="mval">€1,240</div><div class="mlbl">Refunds Issued</div><div class="mch neu">This month</div></div></div>
+          <div class="mcard"><div class="micon bl" aria-hidden="true">✅</div><div><div class="mval">98.2%</div><div class="mlbl">Success Rate</div><div class="mch pos">▲ Great</div></div></div>
+        </div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Payments table"><thead><tr><th scope="col">Order ID</th><th scope="col">Patient</th><th scope="col">Amount</th><th scope="col">Method</th><th scope="col">Status</th><th scope="col">Date</th><th scope="col">Action</th></tr></thead><tbody id="payBody"></tbody></table></div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section id="asec-analytics" class="asec" aria-labelledby="asec-an-title">
+        <div class="asec-title-row"><h1 id="asec-an-title">Analytics &amp; Reports</h1></div>
+        <div class="an-grid">
+          <div class="chart-card"><div class="cc-head"><h3>Weekly Revenue Trend</h3></div><div style="height:240px"><canvas id="anRevChart" aria-label="Weekly revenue trend line chart"></canvas></div></div>
+          <div class="chart-card"><div class="cc-head"><h3>Medicine Categories</h3></div><div style="height:240px"><canvas id="anCatChart" aria-label="Medicine categories pie chart"></canvas></div></div>
+          <div class="chart-card"><div class="cc-head"><h3>Top 5 by Volume</h3></div><div style="height:240px"><canvas id="anTopChart" aria-label="Top 5 medicines by sales volume bar chart"></canvas></div></div>
+          <div class="chart-card"><div class="cc-head"><h3>Monthly Orders</h3></div><div style="height:240px"><canvas id="anMonChart" aria-label="Monthly orders bar chart"></canvas></div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SAFETY & PRECAUTIONS PAGE
+============================================================ -->
+<div id="page-endpoints" class="page">
+  <div class="ep-wrap">
+    <h1>🛡️ Safety &amp; Precautions</h1>
+    <p>At Pharmly, the health and safety of every patient is our absolute highest priority. This section provides comprehensive, plain-language guidance on safe medication use, prescription compliance, allergy awareness, data privacy, and platform security.</p>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">🤖 AI &amp; Chat</div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/chat-agent</code></div>
+        <p class="ep-desc">Send a message to the AI Pharmacy Assistant. Backend handles NLU, medication lookup, prescription checking.</p>
+        <pre class="ep-code">Request: { <span class="k">"message"</span>: <span class="v">"I need paracetamol 10 tablets"</span> }
+Response OK: { <span class="k">"reply"</span>: <span class="v">"Got it! Processing..."</span>, <span class="k">"status"</span>: <span class="v">"approved"</span> }
+Response Rx: { <span class="k">"status"</span>: <span class="v">"rejected"</span>, <span class="k">"reason"</span>: <span class="v">"prescription_required"</span> }</pre>
+      </div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/voice-agent</code></div>
+        <p class="ep-desc">Voice-to-AI endpoint via Vapi SDK. Processes voice input and returns AI response.</p>
+        <pre class="ep-code">Vapi SDK: <span class="k">const</span> vapi = <span class="v">new Vapi("PUBLIC_API_KEY")</span>
+Button: vapi.start(<span class="v">"ASSISTANT_ID"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">📄 Prescription Verification</div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/upload-prescription</code></div>
+        <p class="ep-desc">Upload and verify a patient prescription. Backend validates against the requested medicine.</p>
+        <pre class="ep-code">Request: { <span class="k">"customer_id"</span>: <span class="v">"USR001"</span>, <span class="k">"medicine"</span>: <span class="v">"Amoxicillin 500mg"</span> }
+Response OK: { <span class="k">"status"</span>: <span class="v">"verified"</span>, <span class="k">"verification_id"</span>: <span class="v">"RX-4821"</span> }</pre>
+      </div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">📦 Orders</div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/orders</code></div><p class="ep-desc">Get all orders. Params: ?status=completed&amp;limit=50&amp;page=1</p></div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/orders</code></div>
+        <p class="ep-desc">Create a new order. Prescription check enforced server-side.</p>
+        <pre class="ep-code">{ <span class="k">"customer_id"</span>: <span class="v">"USR001"</span>, <span class="k">"medicine"</span>: <span class="v">"Paracetamol 650"</span>, <span class="k">"quantity"</span>: <span class="v">10</span> }</pre>
+      </div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m PUT">PUT</span><code class="ep-path">/orders/:id</code></div><p class="ep-desc">Update an order status or details.</p></div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m DELETE">DELETE</span><code class="ep-path">/orders/:id</code></div><p class="ep-desc">Cancel and delete an order (admin only).</p></div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">💊 Inventory / Medicines</div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/inventory</code></div><p class="ep-desc">Get all medicines with stock. Params: ?category=antibiotic&amp;low_stock=true</p></div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/inventory</code></div>
+        <p class="ep-desc">Add a new medicine.</p>
+        <pre class="ep-code">{ <span class="k">"name"</span>: <span class="v">"Amoxicillin 500mg"</span>, <span class="k">"stock"</span>: <span class="v">50</span>, <span class="k">"restricted"</span>: <span class="v">true</span> }</pre>
+      </div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/inventory/alerts</code></div><p class="ep-desc">Get low-stock and critical-stock alerts for notification bell.</p></div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">👥 Customers</div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/customers</code></div><p class="ep-desc">Get all registered customers.</p></div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/customers</code></div>
+        <p class="ep-desc">Register a new customer.</p>
+        <pre class="ep-code">{ <span class="k">"name"</span>: <span class="v">"John Doe"</span>, <span class="k">"email"</span>: <span class="v">"john@example.com"</span>, <span class="k">"phone"</span>: <span class="v">"+1-555-0100"</span> }</pre>
+      </div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">📊 Analytics &amp; Dashboard</div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/analytics/revenue</code></div><p class="ep-desc">Revenue data. Params: ?period=week|month|today</p></div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/analytics/top-sellers</code></div><p class="ep-desc">Top selling medicines for given period.</p></div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m GET">GET</span><code class="ep-path">/analytics/dashboard-summary</code></div><p class="ep-desc">All dashboard metrics: revenue, orders, low-stock count, prescription blocks.</p></div>
+    </div>
+
+    <div class="ep-sec">
+      <div class="ep-sec-h">🔐 Authentication</div>
+      <div class="ep-item">
+        <div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/auth/login</code><span class="badge badge-green" style="font-size:.65rem">Public</span></div>
+        <p class="ep-desc">Login with email/password. Returns JWT token.</p>
+        <pre class="ep-code">Request: { <span class="k">"email"</span>: <span class="v">"admin@pharmly.com"</span>, <span class="k">"password"</span>: <span class="v">"..."</span> }
+Response: { <span class="k">"token"</span>: <span class="v">"eyJhbGc..."</span> }</pre>
+      </div>
+      <div class="ep-item"><div class="ep-mrow"><span class="ep-m POST">POST</span><code class="ep-path">/auth/logout</code></div><p class="ep-desc">Invalidate the current session token.</p></div>
+    </div>
+  </div>
+</div>
+
+</main><!-- end #main-content -->
+
+<!-- ============================================================
+     SUPPORT CHATBOT (global)
+============================================================ -->
+<div class="support-wrap">
+  <button class="chat-toggle-btn" onclick="toggleChat()" aria-label="Open support chat" aria-expanded="false" id="chatToggleBtn">💬</button>
+  <div class="chat-panel" id="chatPanel" role="dialog" aria-label="AI Support Assistant" aria-modal="true" hidden>
+    <div class="chat-ph">
+      <div><strong>🤝 Support Assistant</strong><p>AI-Powered · Available 24/7</p></div>
+      <button class="chat-ph-close" onclick="toggleChat()" aria-label="Close support chat">✕</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs" role="log" aria-live="polite" aria-label="Support conversation"></div>
+    <div class="chat-input-row">
+      <label for="chatTi" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Type your support message</label>
+      <input type="text" class="chat-ti" id="chatTi" placeholder="Describe your issue..." aria-label="Type your support message">
+      <button class="chat-send" onclick="sendChatMsg()" aria-label="Send message">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOAST CONTAINER
+============================================================ -->
+<div class="toast-wrap" id="toastWrap" aria-live="assertive" aria-atomic="true" role="status"></div>
+
+<!-- ============================================================
+     MODALS
+============================================================ -->
+
+<!-- LOGIN -->
+<div class="overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" onclick="overlayClose(event,'loginModal')">
+  <div class="modal-box modal-box-inner">
+    <button class="modal-close-btn" onclick="closeModal('loginModal')" aria-label="Close login dialog">✕</button>
+    <h2 class="modal-title" id="loginTitle">Welcome Back</h2>
+    <p class="modal-sub">Login to your Pharmly account</p>
+    <div style="display:flex;flex-direction:column;gap:.875rem">
+      <div class="form-group">
+        <label class="form-label" for="liEmail">Email Address <span aria-hidden="true">*</span></label>
+        <input class="form-input" type="email" id="liEmail" placeholder="you@pharmacy.com" autocomplete="email" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="liPass">Password <span aria-hidden="true">*</span></label>
+        <input class="form-input" type="password" id="liPass" placeholder="••••••••" autocomplete="current-password" required aria-required="true">
+      </div>
+      <button class="btn-primary" onclick="handleLogin()" style="justify-content:center;margin-top:.25rem">Login</button>
+      <button onclick="closeModal('loginModal')" style="background:none;color:var(--g3);font-size:.875rem;padding:8px;border:none;cursor:pointer;border-radius:var(--r1)">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEB CALL -->
+<div class="overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" onclick="overlayClose(event,'callModal')">
+  <div class="modal-box modal-box-inner" style="text-align:center">
+    <button class="modal-close-btn" onclick="closeModal('callModal')" aria-label="Close call dialog">✕</button>
+    <div style="font-size:3rem;margin-bottom:.875rem;animation:orbFloat 2s ease-in-out infinite" aria-hidden="true">📞</div>
+    <h2 class="modal-title" id="callModalTitle">Web Voice Call</h2>
+    <p class="modal-sub">AI Voice Agent is active. Speak your request clearly.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:7px;font-size:.82rem;font-weight:600;color:var(--g3);margin-bottom:1.5rem" aria-live="polite">
+      <span class="dot dot-green" aria-hidden="true"></span>Listening...
+    </div>
+    <button class="btn-primary" onclick="closeModal('callModal')" style="background:linear-gradient(135deg,#ef4444,#dc2626);justify-content:center">
+      <span aria-hidden="true">📵</span> End Call
+    </button>
+  </div>
+</div>
+
+<!-- RX UPLOAD -->
+<div class="overlay" id="rxModal" role="dialog" aria-modal="true" aria-labelledby="rxTitle" onclick="overlayClose(event,'rxModal')">
+  <div class="modal-box modal-box-inner">
+    <button class="modal-close-btn" onclick="closeModal('rxModal')" aria-label="Close prescription upload dialog">✕</button>
+    <h2 class="modal-title" id="rxTitle">📄 Upload Prescription</h2>
+    <p class="modal-sub">Upload a valid prescription to proceed with restricted medication order.</p>
+    <div class="rx-zone" onclick="simulateRxUpload()" role="button" tabindex="0" aria-label="Click or press Enter to upload prescription file" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();simulateRxUpload();}">
+      <div class="rx-zone-icon" aria-hidden="true">📋</div>
+      <p><strong>Click to upload prescription</strong></p>
+      <p style="font-size:.75rem;color:var(--g4);margin-top:5px">JPG, PNG or PDF · Max 10MB</p>
+    </div>
+    <div style="display:flex;gap:.875rem;margin-top:1.4rem">
+      <button class="btn-primary" onclick="simulateRxUpload()" style="flex:1;justify-content:center">
+        <span aria-hidden="true">📄</span> Upload &amp; Verify
+      </button>
+      <button onclick="closeModal('rxModal')" style="flex:1;padding:13px;border:2px solid var(--g5);border-radius:var(--r2);font-weight:600;color:var(--g3);background:white;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ORDER -->
+<div class="overlay" id="addOrderModal" role="dialog" aria-modal="true" aria-labelledby="addOrderTitle" onclick="overlayClose(event,'addOrderModal')">
+  <div class="modal-box modal-box-inner" style="max-width:520px">
+    <button class="modal-close-btn" onclick="closeModal('addOrderModal')" aria-label="Close add order dialog">✕</button>
+    <h2 class="modal-title" id="addOrderTitle">➕ Add New Order</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">
+      <div class="form-group"><label class="form-label" for="aoId">Order ID</label><input class="form-input" id="aoId" placeholder="#ORD600" aria-required="true"></div>
+      <div class="form-group"><label class="form-label" for="aoCust">Customer</label><input class="form-input" id="aoCust" placeholder="John Doe" aria-required="true"></div>
+      <div class="form-group" style="grid-column:span 2"><label class="form-label" for="aoMed">Medicine(s)</label><input class="form-input" id="aoMed" placeholder="Paracetamol (2), Ibuprofen (1)"></div>
+      <div class="form-group"><label class="form-label" for="aoPrice">Price ($)</label><input class="form-input" type="number" id="aoPrice" placeholder="25.50" step="0.01" min="0"></div>
+      <div class="form-group"><label class="form-label" for="aoStatus">Status</label><select class="form-input" id="aoStatus"><option>Pending</option><option>In Progress</option><option>Completed</option></select></div>
+      <div class="form-group"><label class="form-label" for="aoPayment">Payment Method</label><select class="form-input" id="aoPayment"><option>Card</option><option>Cash</option><option>PayPal</option><option value="Pending">Pending</option></select></div>
+    </div>
+    <div style="display:flex;gap:.875rem;margin-top:1.4rem">
+      <button class="btn-primary" onclick="addOrder()" style="flex:1;justify-content:center">✅ Add Order</button>
+      <button onclick="closeModal('addOrderModal')" style="flex:1;padding:13px;border:2px solid var(--g5);border-radius:var(--r2);font-weight:600;color:var(--g3);background:white;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CUSTOMER -->
+<div class="overlay" id="addCustModal" role="dialog" aria-modal="true" aria-labelledby="addCustTitle" onclick="overlayClose(event,'addCustModal')">
+  <div class="modal-box modal-box-inner" style="max-width:520px">
+    <button class="modal-close-btn" onclick="closeModal('addCustModal')" aria-label="Close add customer dialog">✕</button>
+    <h2 class="modal-title" id="addCustTitle">➕ Add New Customer</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">
+      <div class="form-group"><label class="form-label" for="acName">Full Name <span aria-hidden="true">*</span></label><input class="form-input" id="acName" placeholder="John Doe" required aria-required="true"></div>
+      <div class="form-group"><label class="form-label" for="acEmail">Email <span aria-hidden="true">*</span></label><input class="form-input" type="email" id="acEmail" placeholder="john@email.com" required aria-required="true" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label" for="acPhone">Phone <span aria-hidden="true">*</span></label><input class="form-input" id="acPhone" placeholder="+1-555-0100" required aria-required="true" autocomplete="tel"></div>
+      <div class="form-group"><label class="form-label" for="acCity">City</label><input class="form-input" id="acCity" placeholder="New York"></div>
+    </div>
+    <div style="display:flex;gap:.875rem;margin-top:1.4rem">
+      <button class="btn-primary" onclick="addCustomer()" style="flex:1;justify-content:center">✅ Add Customer</button>
+      <button onclick="closeModal('addCustModal')" style="flex:1;padding:13px;border:2px solid var(--g5);border-radius:var(--r2);font-weight:600;color:var(--g3);background:white;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEDICINE -->
+<div class="overlay" id="addMedModal" role="dialog" aria-modal="true" aria-labelledby="addMedTitle" onclick="overlayClose(event,'addMedModal')">
+  <div class="modal-box modal-box-inner" style="max-width:520px">
+    <button class="modal-close-btn" onclick="closeModal('addMedModal')" aria-label="Close add medicine dialog">✕</button>
+    <h2 class="modal-title" id="addMedTitle">➕ Add Medicine</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">
+      <div class="form-group" style="grid-column:span 2"><label class="form-label" for="amName">Medicine Name <span aria-hidden="true">*</span></label><input class="form-input" id="amName" placeholder="Paracetamol 650mg" required aria-required="true"></div>
+      <div class="form-group"><label class="form-label" for="amCat">Category</label><select class="form-input" id="amCat"><option>Pain Relief</option><option>Antibiotic</option><option>Antihistamine</option><option>Diabetes</option><option>Blood Pressure</option><option>Gastric</option><option>Other</option></select></div>
+      <div class="form-group"><label class="form-label" for="amStock">Initial Stock</label><input class="form-input" type="number" id="amStock" placeholder="50" min="0"></div>
+      <div class="form-group"><label class="form-label" for="amPrice">Price ($)</label><input class="form-input" type="number" id="amPrice" placeholder="2.50" step="0.01" min="0"></div>
+      <div class="form-group"><label class="form-label" for="amReorder">Reorder Level</label><input class="form-input" type="number" id="amReorder" placeholder="10" min="0"></div>
+      <div class="form-group" style="grid-column:span 2;flex-direction:row;align-items:center;gap:8px">
+        <input type="checkbox" id="amRx" style="width:18px;height:18px;accent-color:var(--b2);flex-shrink:0">
+        <label class="form-label" for="amRx" style="margin:0;cursor:pointer">Requires Prescription (Rx)</label>
+      </div>
+    </div>
+    <div style="display:flex;gap:.875rem;margin-top:1.4rem">
+      <button class="btn-primary" onclick="addMedicine()" style="flex:1;justify-content:center">✅ Add Medicine</button>
+      <button onclick="closeModal('addMedModal')" style="flex:1;padding:13px;border:2px solid var(--g5);border-radius:var(--r2);font-weight:600;color:var(--g3);background:white;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT / CHECKOUT MODAL -->
+<div class="overlay" id="payModal" role="dialog" aria-modal="true" aria-labelledby="payTitle" onclick="overlayClose(event,'payModal')">
+  <div class="modal-box modal-box-inner" style="max-width:480px">
+    <button class="modal-close-btn" onclick="closeModal('payModal');resetPayModal()" aria-label="Close payment dialog">✕</button>
+    <div id="payFormView">
+      <h2 class="modal-title" id="payTitle">💳 Secure Checkout</h2>
+      <p class="modal-sub">Your connection is encrypted and secure.</p>
+
+      <!-- Card Visual – decorative -->
+      <div class="pay-card-display" aria-hidden="true">
+        <div class="pay-card-chip"></div>
+        <div class="pay-card-num" id="dispCardNum">•••• •••• •••• ••••</div>
+        <div class="pay-card-bottom">
+          <div class="pay-card-holder"><small>Card Holder</small><span id="dispName">YOUR NAME</span></div>
+          <div class="pay-card-expiry"><small>Expires</small><span id="dispExp">MM/YY</span></div>
+        </div>
+        <div class="pay-card-logo"><div class="circle c1"></div><div class="circle c2"></div></div>
+      </div>
+
+      <div class="pay-type-tabs" role="group" aria-label="Payment method">
+        <button class="pay-tab active" onclick="setPayTab(this,'card')" aria-pressed="true">💳 Card</button>
+        <button class="pay-tab" onclick="setPayTab(this,'debit')" aria-pressed="false">🏦 Debit</button>
+        <button class="pay-tab" onclick="setPayTab(this,'paypal')" aria-pressed="false">🅿️ PayPal</button>
+      </div>
+
+      <div id="cardFields" style="display:flex;flex-direction:column;gap:.875rem">
+        <div class="form-group"><label class="form-label" for="payName">Cardholder Name</label><input class="form-input" id="payName" placeholder="Dr. Anna Müller" oninput="updateCard()" maxlength="26" autocomplete="cc-name"></div>
+        <div class="form-group"><label class="form-label" for="payNum">Card Number</label><input class="form-input" id="payNum" placeholder="1234 5678 9012 3456" oninput="fmtCard(this)" maxlength="19" autocomplete="cc-number" inputmode="numeric"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">
+          <div class="form-group"><label class="form-label" for="payExp">Expiry Date</label><input class="form-input" id="payExp" placeholder="MM/YY" oninput="fmtExp(this);updateCard()" maxlength="5" autocomplete="cc-exp" inputmode="numeric"></div>
+          <div class="form-group"><label class="form-label" for="payCvv">CVV</label><input class="form-input" id="payCvv" placeholder="•••" maxlength="4" type="password" autocomplete="cc-csc" inputmode="numeric" aria-describedby="cvvHint"></div>
+        </div>
+        <div id="cvvHint" style="font-size:.72rem;color:var(--g4);margin-top:-6px">3-4 digit security code on back of card</div>
+        <div class="cart-total" style="background:var(--b6);padding:.875rem;border-radius:var(--r2)">
+          <span style="font-size:.9rem">Order Total</span>
+          <strong id="payTotalDisp" style="color:var(--b1);font-size:1.15rem">€0.00</strong>
+        </div>
+        <button class="btn-primary" onclick="processPayment()" style="width:100%;justify-content:center;font-size:1rem">🔒 Pay Now</button>
+        <p style="text-align:center;font-size:.72rem;color:var(--g4)">🔐 256-bit SSL encrypted · PCI DSS compliant · GDPR safe</p>
+      </div>
+
+      <div id="paypalFields" style="display:none;text-align:center;padding:1.25rem 0">
+        <div style="font-size:2.5rem;margin-bottom:.875rem" aria-hidden="true">🅿️</div>
+        <p style="font-size:.9rem;color:var(--g3);margin-bottom:1.25rem">You will be redirected to PayPal to complete your payment securely.</p>
+        <button class="btn-primary" onclick="processPayment()" style="width:100%;justify-content:center;background:linear-gradient(135deg,#003087,#009cde)">Continue to PayPal</button>
+      </div>
+    </div>
+
+    <!-- Success screen -->
+    <div class="pay-success" id="paySuccessView" role="status" aria-live="assertive">
+      <div class="pay-success-icon" aria-hidden="true">✅</div>
+      <h2 style="color:var(--green);font-size:1.6rem;margin-bottom:.5rem">Payment Successful!</h2>
+      <p style="color:var(--g3);margin-bottom:1.25rem">Your order has been confirmed and is being processed by our pharmacy team.</p>
+      <div style="background:var(--b6);border-radius:var(--r2);padding:1rem;margin-bottom:1.25rem;font-size:.85rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--g3)">Transaction ID</span><strong id="txnId" style="color:var(--b1)">TXN-000000</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--g3)">Amount</span><strong id="txnAmt" style="color:var(--green)">€0.00</strong></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--g3)">Status</span><strong style="color:var(--green)">✅ Approved</strong></div>
+      </div>
+      <button class="btn-primary" onclick="closeModal('payModal');resetPayModal()" style="width:100%;justify-content:center">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="overlay" id="orderDetailModal" role="dialog" aria-modal="true" aria-labelledby="odTitle" onclick="overlayClose(event,'orderDetailModal')">
+  <div class="modal-box modal-box-inner" style="max-width:580px">
+    <button class="modal-close-btn" onclick="closeModal('orderDetailModal')" aria-label="Close order details">✕</button>
+    <h2 class="modal-title" id="odTitle">Order Details</h2>
+    <div id="odBody" style="margin-bottom:1.25rem"></div>
+    <button class="btn-primary" onclick="closeModal('orderDetailModal')" style="justify-content:center;width:100%">Close</button>
+  </div>
+</div>
+
+<!-- CUSTOMER DETAIL MODAL -->
+<div class="overlay" id="custDetailModal" role="dialog" aria-modal="true" aria-labelledby="cdTitle" onclick="overlayClose(event,'custDetailModal')">
+  <div class="modal-box modal-box-inner" style="max-width:580px">
+    <button class="modal-close-btn" onclick="closeModal('custDetailModal')" aria-label="Close customer details">✕</button>
+    <h2 class="modal-title" id="cdTitle">Customer Details</h2>
+    <div id="cdBody" style="margin-bottom:1.25rem"></div>
+    <button class="btn-primary" onclick="closeModal('custDetailModal')" style="justify-content:center;width:100%">Close</button>
+  </div>
+</div>
+<script type="module" src="../js/app.js"></script>
+</body>
+</html>
