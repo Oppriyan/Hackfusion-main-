@@ -1,21 +1,30 @@
-export function initToast(){
+export function initToast() {
+  window.toast = function (msg, type = "blue") {
+    const wrap = document.getElementById("toastWrap");
+    if (!wrap) return;
 
-window.toast = function(msg,type='blue'){
+    const t = document.createElement("div");
+    t.className = "toast " + type;
+    t.innerText = msg;
+    wrap.appendChild(t);
 
-  const wrap = document.getElementById('toastWrap');
+    setTimeout(() => {
+      t.remove();
+    }, 3500);
+  };
 
-  const t = document.createElement('div');
+  // Alias for toast
+  window.showToast = function (msg, type = "info") {
+    // Map message types to toast types
+    const toastType =
+      type === "error"
+        ? "red"
+        : type === "success"
+          ? "green"
+          : type === "warning"
+            ? "yellow"
+            : "blue";
 
-  t.className = 'toast ' + type;
-
-  t.innerText = msg;
-
-  wrap.appendChild(t);
-
-  setTimeout(()=>{
-    t.remove();
-  },3500);
-
-};
-
+    window.toast(msg, toastType);
+  };
 }
