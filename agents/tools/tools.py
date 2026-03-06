@@ -120,41 +120,74 @@ def get_order_status(order_id):
 # PRESCRIPTION
 
 @traceable(name="Verify-Prescription")
-def verify_prescription(customer_id, medicine_identifier):
+def verify_prescription(customer_id, medicine_id):
+    """Check if prescription is valid and verified"""
 
     return safe_request(
         "POST",
-        "/verify-prescription",
+        "/prescription/check-prescription",
         json={
             "customer_id": str(customer_id),
-            "medicine": str(medicine_identifier)
+            "medicine_id": int(medicine_id)
         }
     )
 
 
 @traceable(name="Prescription-Status")
-def check_prescription_status(customer_id, medicine_name):
+def check_prescription_status(customer_id, medicine_id):
+    """Get detailed prescription status"""
 
     return safe_request(
         "POST",
-        "/prescription-status",
+        "/prescription/check-prescription",
         json={
             "customer_id": str(customer_id),
-            "medicine": str(medicine_name)
+            "medicine_id": int(medicine_id)
         }
     )
 
 
 def upload_prescription_file(customer_id, medicine_id, file_path):
+    """Upload prescription file"""
 
-    with open(file_path, "rb") as f:
-
-        return safe_request(
-            "POST",
-            "/upload-prescription",
-            files={"file": f},
-            data={
+    try:
+        with open(file_path, "rb") as f:
+            files = {"file": f}
+            data = {
                 "customer_id": customer_id,
                 "medicine_id": medicine_id
             }
-        )
+            return safe_request(
+                "POST",
+                "/prescription/upload-prescription",
+                files=files,
+                data=data
+            )
+    except FileNotFoundError:
+        return {
+            "status": "error",
+            "reason": "Prescription file not found"
+        }
+
+
+def get_pending_prescriptions():
+    """Get pending prescriptions for admin"""
+
+    return safe_request(
+        "GET",
+        "/prescription/pending-prescriptions"
+    )
+
+
+def approve_prescription(customer_id, medicine_id, approve=True):
+    """Admin approves or rejects prescription"""
+
+    return safe_request(
+        "POST",
+        "/prescription/approve-prescription",
+        json={
+            "customer_id": str(customer_id),
+            "medicine_id": int(medicine_id),
+            "approve": approve
+        }
+    )

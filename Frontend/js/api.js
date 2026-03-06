@@ -231,6 +231,15 @@ export const ChatAPI = {
     });
     return response.data || { error: "Failed to fetch conversation" };
   },
+
+  sendVoiceMessage: async (message, customerId = "PAT999", callId = null) => {
+    const response = await apiCall("POST", "/chat/voice-webhook", {
+      message: message,
+      customer_id: customerId,
+      call_id: callId,
+    });
+    return response.data || { error: "Failed to process voice message" };
+  },
 };
 
 // ============================================================

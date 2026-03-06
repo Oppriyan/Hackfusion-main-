@@ -9,6 +9,8 @@ import {initChatbot} from "./modules/chatbot.js";
 import {initDashboard} from "./modules/dashboard.js";
 import {initAdmin} from "./modules/admin.js";
 import {initPayment} from "./modules/payment.js";
+import {initVoice} from "./modules/voice.js";
+import {initAuth} from "./modules/auth.js";
 
 document.addEventListener("DOMContentLoaded",()=>{
 
@@ -23,5 +25,7 @@ initChatbot();
 initDashboard();
 initAdmin();
 initPayment();
+initVoice();
+initAuth();
 
 });
