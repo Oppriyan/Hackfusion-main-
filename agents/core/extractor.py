@@ -4,7 +4,7 @@ import os
 import json
 import re
 from dotenv import load_dotenv
-from openai import AzureOpenAI
+import google.generativeai as genai
 from langsmith import traceable
 from agents.models.schemas import StructuredRequest
 
@@ -18,11 +18,13 @@ ALLOWED_INTENTS = {
     "smalltalk"
 }
 
-client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-)
+# --------------------------------------------------
+# GEMINI CONFIG
+# --------------------------------------------------
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 @traceable(name="Intent-Extraction")
@@ -46,7 +48,7 @@ def extract_structured_request(user_input: str) -> StructuredRequest:
     system_prompt = """
 You are a pharmacy intent extractor.
 
-Return ONLY JSON:
+Return ONLY JSON in this format:
 
 {
 "intent": "order | inventory | history | upload_prescription | smalltalk",
@@ -54,20 +56,28 @@ Return ONLY JSON:
 "quantity": integer or null,
 "customer_id": string or null
 }
+
+Return ONLY raw JSON. Do not add explanation.
 """
 
     try:
 
-        response = client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_input}
-            ],
-            temperature=0
-        )
+        prompt = f"""
+{system_prompt}
 
-        content = response.choices[0].message.content.strip()
+User Input:
+{user_input}
+"""
+
+        response = model.generate_content(prompt)
+
+        content = response.text.strip()
+
+        # Gemini sometimes returns extra text — extract JSON safely
+        json_match = re.search(r"\{.*\}", content, re.DOTALL)
+
+        if json_match:
+            content = json_match.group(0)
 
         parsed = json.loads(content)
 
@@ -92,7 +102,7 @@ Return ONLY JSON:
 
     except Exception as e:
 
-        print("⚠ Azure extractor failed. Using fallback parser.")
+        print("⚠ Gemini extractor failed. Using fallback parser.")
         print(str(e))
 
         # --------------------------------------------------

@@ -161,4 +161,53 @@ export function initPayment() {
       showToast("Failed to check prescription status");
     }
   };
+
+  // Set payment tab
+  window.setPayTab = function(element, tabName) {
+    // Remove active class from all tabs
+    document.querySelectorAll(".pay-tab").forEach(tab => {
+      tab.classList.remove("active");
+      tab.setAttribute("aria-pressed", "false");
+    });
+
+    // Add active class to clicked tab
+    if (element) {
+      element.classList.add("active");
+      element.setAttribute("aria-pressed", "true");
+    }
+
+    // Hide all payment methods
+    document.querySelectorAll(".pay-method").forEach(method => {
+      method.style.display = "none";
+    });
+
+    // Show selected payment method
+    const payMethod = document.getElementById("pay-" + tabName);
+    if (payMethod) {
+      payMethod.style.display = "block";
+    }
+  };
+
+  // Reset payment modal
+  window.resetPayModal = function() {
+    document.querySelectorAll(".pay-tab").forEach(tab => {
+      tab.classList.remove("active");
+      tab.setAttribute("aria-pressed", "false");
+    });
+
+    const firstTab = document.querySelector(".pay-tab");
+    if (firstTab) {
+      firstTab.classList.add("active");
+      firstTab.setAttribute("aria-pressed", "true");
+    }
+
+    document.querySelectorAll(".pay-method").forEach(method => {
+      method.style.display = "none";
+    });
+
+    const firstMethod = document.querySelector(".pay-method");
+    if (firstMethod) {
+      firstMethod.style.display = "block";
+    }
+  };
 }

@@ -47,4 +47,26 @@ export function initCart() {
     cartItems.splice(i, 1);
     renderCart();
   };
+
+  window.toggleCart = function () {
+    const cartDrop = document.getElementById("cartDrop");
+    if (cartDrop) {
+      cartDrop.classList.toggle("show");
+    }
+  };
+
+  window.clearCart = function () {
+    if (confirm("Clear cart?")) {
+      cartItems.length = 0;
+      renderCart();
+    }
+  };
+
+  window.openCheckout = async function () {
+    if (cartItems.length === 0) {
+      showToast("Your cart is empty");
+      return;
+    }
+    openModal("checkoutModal");
+  };
 }

@@ -40,7 +40,12 @@ from werkzeug.security import generate_password_hash
 
 def create_app():
 
-    app = Flask(__name__)
+    # Configure static files and template folder for frontend
+    app = Flask(__name__, 
+                static_folder=os.path.join(ROOT_PATH, "Frontend"),
+                static_url_path="/static",
+                template_folder=os.path.join(ROOT_PATH, "Frontend", "html"))
+    
     CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
     # Initialize database
@@ -94,5 +99,23 @@ def create_app():
     @app.route("/health", methods=["GET"])
     def health():
         return {"status": "ok"}, 200
+
+    # Serve frontend
+    from flask import render_template
+    @app.route("/", methods=["GET"])
+    def index():
+        return render_template("index.html")
+    
+    @app.route("/<path:path>", methods=["GET"])
+    def serve_static(path):
+        from flask import send_from_directory
+        # Try to serve from static folder first
+        static_path = os.path.join(ROOT_PATH, "Frontend", path)
+        if os.path.exists(static_path):
+            if os.path.isfile(static_path):
+                return send_from_directory(os.path.join(ROOT_PATH, "Frontend"), path)
+            else:
+                return render_template("index.html")
+        return render_template("index.html")
 
     return app

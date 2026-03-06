@@ -309,9 +309,34 @@ export function initVoice() {
     }
   };
 
+  /**
+   * Toggle voice input mode
+   */
+  window.toggleVoice = async function () {
+    const micBtn = document.getElementById("micBtn");
+    if (!micBtn) return;
+
+    const isActive = micBtn.getAttribute("aria-pressed") === "true";
+
+    if (isActive) {
+      // Stop voice
+      if (window.VAPI && typeof window.VAPI.stop === "function") {
+        window.VAPI.stop();
+      }
+      micBtn.setAttribute("aria-pressed", "false");
+      micBtn.classList.remove("active");
+    } else {
+      // Start voice
+      try {
+        await initVoiceCall();
+        micBtn.setAttribute("aria-pressed", "true");
+        micBtn.classList.add("active");
+      } catch (error) {
+        console.error("Voice toggle error:", error);
+        showToast("Failed to start voice", "error");
+      }
+    }
+  };
+
   console.log("✅ Voice module initialized");
 }
-
-// Export for module usage
-export { loadVAPISDK };
-

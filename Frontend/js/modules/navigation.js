@@ -14,4 +14,27 @@ window.goTo = function(page) {
 
 };
 
+window.toggleMobileNav = function() {
+  const mobileNav = document.getElementById("mobileNav");
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  if (mobileNav) {
+    const isHidden = mobileNav.hidden;
+    mobileNav.hidden = !isHidden;
+    if (hamburgerBtn) {
+      hamburgerBtn.setAttribute("aria-expanded", !isHidden);
+    }
+  }
+};
+
+window.closeMobileNav = function() {
+  const mobileNav = document.getElementById("mobileNav");
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  if (mobileNav) {
+    mobileNav.hidden = true;
+    if (hamburgerBtn) {
+      hamburgerBtn.setAttribute("aria-expanded", false);
+    }
+  }
+};
+
 }

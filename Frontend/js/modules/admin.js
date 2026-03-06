@@ -131,6 +131,30 @@ export function initAdmin() {
     }
   };
 
+  // Show admin section
+  window.showAdminSec = function(section, element) {
+    // Hide all sections
+    document.querySelectorAll(".admin-sec").forEach(sec => {
+      sec.classList.remove("active");
+    });
+
+    // Show selected section
+    const selectedSec = document.getElementById("asec-" + section);
+    if (selectedSec) {
+      selectedSec.classList.add("active");
+    }
+
+    // Update button states
+    if (element) {
+      document.querySelectorAll(".sb-btn").forEach(btn => {
+        btn.classList.remove("active");
+        btn.setAttribute("aria-pressed", "false");
+      });
+      element.classList.add("active");
+      element.setAttribute("aria-pressed", "true");
+    }
+  };
+
   // Load admin panel on init
   console.log("Admin panel initialized");
 }

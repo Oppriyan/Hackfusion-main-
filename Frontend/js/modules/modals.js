@@ -20,4 +20,10 @@ window.closeModal = function(id){
 
 };
 
+window.overlayClose = function(event, id){
+  if(event.target.id === id){
+    closeModal(id);
+  }
+};
+
 }

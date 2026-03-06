@@ -87,6 +87,12 @@ export const AuthAPI = {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
+
+  isUserLoggedIn: () => {
+    const token = localStorage.getItem("auth_token");
+    const user = localStorage.getItem("user");
+    return !!(token && user);
+  },
 };
 
 // ============================================================

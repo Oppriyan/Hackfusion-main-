@@ -95,4 +95,9 @@ export function initChatbot() {
       console.error("Load history error:", error);
     }
   }
+
+  // Alias for HTML onclick handler
+  window.sendAiMsg = function() {
+    sendChatMsg();
+  };
 }
