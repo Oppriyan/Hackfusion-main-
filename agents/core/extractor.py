@@ -4,7 +4,7 @@ import os
 import json
 import re
 from dotenv import load_dotenv
-import google.generativeai as genai
+from openai import OpenAI
 from langsmith import traceable
 from agents.models.schemas import StructuredRequest
 
@@ -19,27 +19,23 @@ ALLOWED_INTENTS = {
 }
 
 # --------------------------------------------------
-# GEMINI CONFIG
+# GROQ CLIENT
 # --------------------------------------------------
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = OpenAI(
+    api_key=os.getenv("GROQ_API_KEY"),
+    base_url=os.getenv("GROQ_BASE_URL")
+)
 
 
 @traceable(name="Intent-Extraction")
 def extract_structured_request(user_input: str) -> StructuredRequest:
-
-    # --------------------------------------------------
-    # INPUT SANITIZATION
-    # --------------------------------------------------
 
     if not user_input or not isinstance(user_input, str):
         return StructuredRequest(intent="smalltalk")
 
     user_input = user_input.strip()
 
-    # Prevent extremely long prompts breaking system
     if len(user_input) > 200:
         return StructuredRequest(intent="smalltalk")
 
@@ -57,23 +53,22 @@ Return ONLY JSON in this format:
 "customer_id": string or null
 }
 
-Return ONLY raw JSON. Do not add explanation.
+Return ONLY raw JSON. No explanation.
 """
 
     try:
 
-        prompt = f"""
-{system_prompt}
+        response = client.chat.completions.create(
+            model=os.getenv("GROQ_MODEL"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input}
+            ],
+            temperature=0
+        )
 
-User Input:
-{user_input}
-"""
+        content = response.choices[0].message.content.strip()
 
-        response = model.generate_content(prompt)
-
-        content = response.text.strip()
-
-        # Gemini sometimes returns extra text — extract JSON safely
         json_match = re.search(r"\{.*\}", content, re.DOTALL)
 
         if json_match:
@@ -102,14 +97,9 @@ User Input:
 
     except Exception as e:
 
-        print("⚠ Gemini extractor failed. Using fallback parser.")
+        print("⚠ Groq extractor failed. Using fallback parser.")
         print(str(e))
 
-        # --------------------------------------------------
-        # FALLBACK RULE PARSER
-        # --------------------------------------------------
-
-        # ORDER: order 2 paracetamol
         order_match = re.search(r"order\s+(\d+)\s+([a-zA-Z\s]+)", user_input_lower)
 
         if order_match:
@@ -124,7 +114,6 @@ User Input:
                 customer_id=None
             )
 
-        # INVENTORY / STOCK
         if "inventory" in user_input_lower or "stock" in user_input_lower:
 
             medicine = re.sub(
@@ -142,11 +131,9 @@ User Input:
                 customer_id=None
             )
 
-        # HISTORY
         if "history" in user_input_lower:
             return StructuredRequest(intent="history")
 
-        # UPLOAD PRESCRIPTION
         if "upload" in user_input_lower:
             return StructuredRequest(intent="upload_prescription")
 

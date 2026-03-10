@@ -1,16 +1,14 @@
 import { ChatAPI, AuthAPI } from "../api.js";
 
 export function initChatbot() {
-  const input = document.getElementById("chatInput");
+  const input = document.getElementById("aiInput");
   const chatBox = document.getElementById("chatBox");
 
-  if (!input) return;
-
-  window.sendChatMsg = async function () {
+  // Always define the global handler for HTML
+  window.sendAiMsg = async function () {
+    if (!input) return;
     const message = input.value.trim();
-
     if (!message) return;
-
     try {
       // Add user message to chat display
       if (chatBox) {
@@ -20,16 +18,12 @@ export function initChatbot() {
         chatBox.appendChild(userMsg);
         chatBox.scrollTop = chatBox.scrollHeight;
       }
-
       input.value = "";
-
       // Get current user
       const user = AuthAPI.getCurrentUser();
       const customerId = user?.id || "PAT999";
-
       // Send to API
       const response = await ChatAPI.sendMessage(message, customerId);
-
       if (response.status === "success" && chatBox) {
         const botMsg = document.createElement("div");
         botMsg.className = "chat-message bot";
@@ -66,21 +60,21 @@ export function initChatbot() {
   }
 
   // Send message on Enter key
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendChatMsg();
-    }
-  });
+  if (input) {
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        window.sendAiMsg();
+      }
+    });
+  }
 
   // Load chat history
   async function loadChatHistory() {
     try {
       const user = AuthAPI.getCurrentUser();
       const customerId = user?.id || "PAT999";
-
       const history = await ChatAPI.getConversationHistory(customerId);
-
       if (history.status === "success" && history.data && chatBox) {
         chatBox.innerHTML = "";
         history.data.forEach((msg) => {
@@ -95,9 +89,4 @@ export function initChatbot() {
       console.error("Load history error:", error);
     }
   }
-
-  // Alias for HTML onclick handler
-  window.sendAiMsg = function() {
-    sendChatMsg();
-  };
 }

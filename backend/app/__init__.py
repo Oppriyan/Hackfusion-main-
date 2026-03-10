@@ -90,7 +90,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(inventory_bp, url_prefix="/inventory")
     app.register_blueprint(order_bp)
-    app.register_blueprint(chat_bp)
+    app.register_blueprint(chat_bp, url_prefix="/chat")
     app.register_blueprint(prescription_bp)
     app.register_blueprint(webhook_bp)
     app.register_blueprint(analytics_bp)
